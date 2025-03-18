@@ -1,13 +1,8 @@
-#This is a PowerShell script designed to loop a basic 'ping' to each IP listed in a .csv file and output the status of the connection into the same or new (same if the date is the same, new if it isn't) .csv file. The resulting .csv can #be screened for status changes. Status 'changes' are determined by the notes. No notes would simply mean the device was previously 'up', and as recommened; applied notes would mean it was previously 'down'. Using this logic, one can #format the .csv into a table with headers and save it as a .xls (Excel) doc to filter for changes or more specific statuses. Any 'blank' notes with an 'up' status, would mean the devices are up as intended. Any 'down' without notes, #would mean it has went down since the last scan. Here you would add notes to identify the downage and/or why it is down. Inversely, any 'up' status with a note will mean that it is back up after having been previously down. Here you #can remove the notes. After screening and updating any notes, you CAN clear the status column to blank cells and remove the header. Save this version as a .csv again in the orginal location and it will serve as the next scan's #database. You do NOT have to remove the headers or clear the status for the scan to work and output the current status. It will only make the print look cleaner while the scan is occuring. Otherwise the output will still be accurate #but will contain an additional header you can simply remove. Saving the Excel version in a different location is a great way to retain a record or to share as a report.
-#This code is pending edits to incorporate Excel instead of .csv to avoid the need of format conversion.
-
-   
-
 #Opening script with welcome message.
 echo ""
 echo ""
 $Begin = Read-Host "Hello!
-
+Ready to begin connection scan?
 Enter Y to start."
 
 if ($Begin -eq "y"){
@@ -37,7 +32,7 @@ foreach ($Object in $Objects){
 $results = [System.Collections.Generic.List[PSObject]]::new()
 
 foreach ($Object in $Objects){
-    Write-Progress -Id 0 -Activity "Checking connections to DDCs an gateways" -Status "$Count of $TotalToCheck" -PercentComplete (($Count / $TotalToCheck) * 100)
+    Write-Progress -Id 0 -Activity "Checking connections." -Status "$Count of $TotalToCheck" -PercentComplete (($Count / $TotalToCheck) * 100)
       
 	if (Test-Connection  $Object.Split(",")[0] -BufferSize 16 -Count 2 -ea 0 -Quiet){
         $Output = "up"
@@ -59,17 +54,15 @@ foreach ($Object in $Objects){
 
 $Count++
 } 
-#Exporting the results to the location indicated. By default this is the same location as the source database.  
+#Exporting the results to the location indicated. Use the same location as the source database to use the results for the next scan you perform.  
 $results | Export-Csv -Path "X:\filelocation $($Date).csv" -NoTypeInformation
 
 echo "Scan complete. Report is available in .csv format.
 
-* For ease of visibility, remove the HEADER and clear the STATUS COLUMN before saving the database for next scan.*
-    This is NOT a requirement for the script to work.
-    
-    Now let's do more gooder!"
+* Remove the HEADER and clear the UPDOWN column before saving the database for next scan.*"
 
 #The else statement to skip the script.
 }else {
     write-host -ForegroundColor Red "Canceled. Restart script to begin again."
 }
+Read-Host "Press any key to continue."
